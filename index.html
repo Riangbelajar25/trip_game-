@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>吉隆坡毕业旅行连词成句小游戏</title>
+    <style>
+        body { font-family: 'Helvetica Neue', Arial, sans-serif; background-color: #f0f2f5; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; -webkit-user-select: none; user-select: none; }
+        .card { background: white; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 100%; max-width: 500px; padding: 20px; box-sizing: border-box; text-align: center; }
+        h2 { color: #1a73e8; margin-top: 0; font-size: 20px; }
+        .progress { color: #666; font-size: 14px; margin-bottom: 15px; }
+        .prompt { font-size: 18px; font-weight: bold; color: #333; margin-bottom: 20px; padding: 10px; background: #e8f0fe; border-radius: 8px; }
+        .word-pool, .answer-zone { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; min-height: 50px; border: 2px dashed #ccc; border-radius: 8px; padding: 10px; margin-bottom: 20px; background: #fafafa; }
+        .answer-zone { border-color: #1a73e8; background: #f4f8ff; }
+        .word-btn { background: white; border: 1px solid #dadce0; border-radius: 20px; padding: 8px 16px; font-size: 16px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.05); transition: all 0.2s; max-width: 100%; word-break: break-all; }
+        .word-btn:active { background: #e8f0fe; transform: scale(0.95); }
+        .btn-group { display: flex; gap: 10px; justify-content: center; }
+        button.action-btn { background-color: #1a73e8; color: white; border: none; border-radius: 8px; padding: 12px 24px; font-size: 16px; font-weight: bold; cursor: pointer; flex: 1; }
+        button.action-btn:active { background-color: #1557b0; }
+        button.reset-btn { background-color: #f1f3f4; color: #3c4043; }
+        .msg { font-weight: bold; margin-top: 15px; min-height: 24px; font-size: 16px; }
+        .success { color: #137333; }
+        .error { color: #c5221f; }
+        .final-screen { display: none; }
+        .score-display { font-size: 48px; color: #1a73e8; font-weight: bold; margin: 20px 0; }
+    </style>
+</head>
+<body>
+
+<div class="card" id="game-card">
+    <h2>🎮 连词成句挑战赛 🎮</h2>
+    <div class="progress" id="progress">第 1 / 10 关</div>
+    <div class="prompt" id="prompt">正在加载提示...</div>
+    
+    <div style="text-align: left; font-size: 12px; color: #666; margin-bottom: 4px;">你的答案区域 (点击单词可退回)：</div>
+    <div class="answer-zone" id="answer-zone"></div>
+    
+    <div style="text-align: left; font-size: 12px; color: #666; margin-bottom: 4px;">待选单词池 (点击进入答案区)：</div>
+    <div class="word-pool" id="word-pool"></div>
+    
+    <div class="btn-group">
+        <button class="action-btn reset-btn" onclick="resetCurrentRound()">重置本关</button>
+        <button class="action-btn" onclick="checkAnswer()">提交答案</button>
+    </div>
+    <div class="msg" id="msg"></div>
+</div>
+
+<div class="card final-screen" id="final-card">
+    <h2>🏁 恭喜通关！ 🏁</h2>
+    <p>同学已经成功完成了所有连词成句的挑战！</p>
+    <div class="score-display">100 分</div>
+    <p style="color: #666; line-height: 1.6; text-align: left; background: #f8f9fa; padding: 15px; border-radius: 8px;">
+        <b>💪 你背下的完整作文：</b><br>
+        Do you remember your last trip? A year ago, I went on a graduation trip with my classmates. We traveled there by express bus. We stayed at a nice hotel. We visited many fun places in Kuala Lumpur. First, we went to the chocolate museum. Next, we visited the Faber-Castell factory to see how pencils are made. We also went to the Bank Negara Malaysia Museum to see old coins. In the evening, we saw the beautiful Petronas Twin Towers. It was a very wonderful and great trip!
+    </p>
+    <button class="action-btn" onclick="restartGame()">重新玩一次</button>
+</div>
+
+<script>
+const data = [
+    { c: "你还记得你上一次旅行吗？", e: "Do you remember your last trip?" },
+    { c: "一年前，我和班上的朋友去了一趟毕业旅行。", e: "A year ago, I went on a graduation trip with my classmates." },
+    { c: "我们乘长途巴士去那里。", e: "We traveled there by express bus." },
+    { c: "我们住在一家很好的酒店。", e: "We stayed at a nice hotel." },
+    { c: "我们在吉隆坡参观了许多好玩的地方。", e: "We visited many fun places in Kuala Lumpur." },
+    { c: "第一站，我们去了巧克力博物馆。", e: "First, we went to the chocolate museum." },
+    { c: "接下来，我们参观了辉加工厂看铅笔是怎么做的。", e: "Next, we visited the Faber-Castell factory to see how pencils are made." },
+    { c: "我们也去了马来西亚国家银行博物馆看旧硬币。", e: "We also went to the Bank Negara Malaysia Museum to see old coins." },
+    { c: "傍晚，我们看到了美丽的双子塔。", e: "In the evening, we saw the beautiful Petronas Twin Towers." },
+    { c: "那是一次非常精彩且棒的旅行！", e: "It was a very wonderful and great trip!" }
+];
+
+let currentIndex = 0;
+let selectedWords = [];
+let poolWords = [];
+
+function initRound() {
+    if(currentIndex >= data.length) {
+        document.getElementById('game-card').style.display = 'none';
+        document.getElementById('final-card').style.display = 'block';
+        return;
+    }
+    
+    document.getElementById('progress').innerText = `第 ${currentIndex + 1} / ${data.length} 关`;
+    document.getElementById('prompt').innerText = data[currentIndex].c;
+    document.getElementById('msg').innerText = '';
+    
+    selectedWords = [];
+    let clean = data[currentIndex].e.replace(/[?.!,]/g, '');
+    poolWords = clean.split(' ');
+    
+    // 随机打乱单词
+    poolWords.sort(() => Math.random() - 0.5);
+    renderBlocks();
+}
+
+function renderBlocks() {
+    const poolZone = document.getElementById('word-pool');
+    const answerZone = document.getElementById('answer-zone');
+    
+    poolZone.innerHTML = '';
+    answerZone.innerHTML = '';
+    
+    poolWords.forEach((w, idx) => {
+        if(w) {
+            let btn = document.createElement('button');
+            btn.className = 'word-btn';
+            btn.innerText = w;
+            btn.onclick = () => {
+                selectedWords.push(w);
+                poolWords[idx] = null;
+                renderBlocks();
+            };
+            poolZone.appendChild(btn);
+        }
+    });
+    
+    selectedWords.forEach((w, idx) => {
+        let btn = document.createElement('button');
+        btn.className = 'word-btn';
+        btn.innerText = w;
+        btn.onclick = () => {
+            let origIdx = poolWords.findIndex(x => x === null);
+            if(origIdx !== -1) {
+                poolWords[origIdx] = w;
+            } else {
+                poolWords.push(w);
+            }
+            selectedWords.splice(idx, 1);
+            renderBlocks();
+        };
+        answerZone.appendChild(btn);
+    });
+}
+
+function resetCurrentRound() {
+    initRound();
+}
+
+function checkAnswer() {
+    let userAns = selectedWords.join(' ').toLowerCase();
+    let targetAns = data[currentIndex].e.replace(/[?.!,]/g, '').toLowerCase();
+    const msg = document.getElementById('msg');
+    
+    if(userAns === targetAns) {
+        msg.className = "msg success";
+        msg.innerText = "🎉 答对了！太棒了！3秒后进入下一关...";
+        setTimeout(() => {
+            currentIndex++;
+            initRound();
+        }, 2000);
+    } else {
+        msg.className = "msg error";
+        msg.innerText = "❌ 顺序不太对哦，检查一下首字母大小写或语序，再试一次！";
+    }
+}
+
+function restartGame() {
+    currentIndex = 0;
+    document.getElementById('game-card').style.display = 'block';
+    document.getElementById('final-card').style.display = 'none';
+    initRound();
+}
+
+window.onload = initRound;
+</script>
+</body>
+</html>
