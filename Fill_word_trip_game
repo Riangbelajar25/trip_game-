@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>吉隆坡旅行：14题生字填字母大闯关</title>
+    <style>
+        body { font-family: 'Helvetica Neue', Arial, sans-serif; background-color: #f4f6f9; margin: 0; padding: 15px; display: flex; flex-direction: column; align-items: center; }
+        .card { background: white; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); width: 100%; max-width: 480px; padding: 25px; box-sizing: border-box; text-align: center; margin-top: 10px; }
+        h2 { color: #1a73e8; margin-top: 0; font-size: 22px; margin-bottom: 5px; }
+        .subtitle { font-size: 13px; color: #666; margin-bottom: 20px; }
+        .stage-badge { font-size: 13px; font-weight: bold; padding: 6px 12px; border-radius: 20px; display: inline-block; margin-bottom: 15px; }
+        .stage-1 { background-color: #fce8e6; color: #c5221f; }
+        .stage-2 { background-color: #e8f0fe; color: #1a73e8; }
+        .chinese-clue { font-size: 20px; font-weight: bold; color: #202124; margin-bottom: 25px; background: #f1f3f4; padding: 12px; border-radius: 8px; }
+        
+        /* 核心填字母区域样式 */
+        .puzzle-zone { display: flex; justify-content: center; align-items: center; gap: 6px; margin-bottom: 30px; flex-wrap: wrap; }
+        .char-box { font-size: 24px; font-weight: bold; width: 28px; text-align: center; border-bottom: 3px solid #5f6368; color: #3c4043; padding-bottom: 4px; }
+        .char-box.input-box { border-bottom: 3px solid #1a73e8; color: #1a73e8; background: #f4f8ff; width: 32px; height: 36px; border-top: none; border-left: none; border-right: none; border-radius: 4px 4px 0 0; }
+        .char-box.input-box:focus { outline: none; background: #e8f0fe; border-bottom-color: #1557b0; }
+        .char-space { width: 15px; }
+
+        button.action-btn { background-color: #1a73e8; color: white; border: none; border-radius: 8px; padding: 14px 28px; font-size: 16px; font-weight: bold; cursor: pointer; width: 100%; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        button.action-btn:active { background-color: #1557b0; }
+        .msg { font-weight: bold; margin-top: 15px; min-height: 24px; font-size: 16px; line-height: 1.4; }
+        .success { color: #137333; background: #e6f4ea; padding: 8px; border-radius: 6px; }
+        .error { color: #c5221f; background: #fce8e6; padding: 8px; border-radius: 6px; }
+        #score-board { font-size: 15px; color: #5f6368; font-weight: bold; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+
+<div class="card" id="game-card">
+    <h2>✍️ 生字填字母大闯关 ✍️</h2>
+    <div id="score-board">进度: 第 1 / 14 题</div>
+    <div class="stage-badge stage-1" id="stage-badge">第一阶段：基础核心挑战</div>
+    
+    <div class="chinese-clue" id="clue-text">正在加载提示...</div>
+    
+    <!-- 字母解谜互动区 -->
+    <div class="puzzle-zone" id="puzzle-zone"></div>
+    
+    <button class="action-btn" onclick="checkAnswer()">提交检查</button>
+    <div class="msg" id="msg"></div>
+</div>
+
+<div class="card" id="final-card" style="display:none;">
+    <h2>🏁 恭喜满分通关！ 🏁</h2>
+    <p style="font-size: 15px; color: #5f6368;">同学太厉害了！这 14 个核心作文生字你已经全部掌握啦！</p>
+    <div style="font-size: 48px; color: #1a73e8; font-weight: bold; margin: 25px 0;">💯 完美过关</div>
+    <button class="action-btn" onclick="location.reload()">重新再挑战一次</button>
+</div>
+
+<script>
+// 14题完整的游戏数据库，严格按照你的挖空位置来设计
+const quizData = [
+    // 第一阶段
+    { c: "记得 / 记忆 (动词)", w: "remember", mask:, stage: 1 },
+    { c: "毕业 (名词)", w: "graduation", mask:, stage: 1 },
+    { c: "难忘的 / 值得纪念的 (形容词)", w: "memorable", mask:, stage: 1 },
+    { c: "长途快车 / 巴士 (名词)", w: "express bus", mask:, stage: 1 }, // 挖空 x, s, u
+    { c: "美丽的 (形容词)", w: "beautiful", mask:, stage: 1 },
+    // 第二阶段
+    { c: "同班同学 (名词)", w: "classmates", mask:, stage: 2 },
+    { c: "旅行 / 乘车出行 (动词过去式)", w: "traveled", mask:, stage: 2 },
+    { c: "舒服的 / 舒适的 (形容词)", w: "comfortable", mask:, stage: 2 },
+    { c: "参观 / 拜访 (动词过去式)", w: "visited", mask:, stage: 2 },
+    { c: "博物馆 (名词)", w: "museum", mask:, stage: 2 },
+    { c: "巧克力 (名词)", w: "chocolate", mask:, stage: 2 },
+    { c: "工厂 (名词)", w: "factory", mask:, stage: 2 },
+    { c: "傍晚 / 晚上 (名词)", w: "evening", mask:, stage: 2 },
+    { c: "精彩的 / 极好的 (形容词)", w: "wonderful", mask:, stage: 2 }
+];
+
+let currentIndex = 0;
+
+function initQuestion() {
+    if(currentIndex >= quizData.length) {
+        document.getElementById('game-card').style.display = 'none';
+        document.getElementById('final-card').style.display = 'block';
+        return;
+    }
+    
+    const q = quizData[currentIndex];
+    
+    // 更新进度和阶段标签
+    document.getElementById('score-board').innerText = `进度: 第 ${currentIndex + 1} / ${quizData.length} 题`;
+    const badge = document.getElementById('stage-badge');
+    if(q.stage === 1) {
+        badge.innerText = "🔴 第一阶段：基础核心挑战";
+        badge.className = "stage-badge stage-1";
+    } else {
+        badge.innerText = "🔵 第二阶段：进阶景点与动作挑战";
+        badge.className = "stage-badge stage-2";
+    }
+    
+    document.getElementById('clue-text').innerText = q.c;
+    document.getElementById('msg').innerText = '';
+    
+    // 渲染字母格子
+    const zone = document.getElementById('puzzle-zone');
+    zone.innerHTML = '';
+    
+    let inputCount = 0;
+    for(let i = 0; i < q.w.length; i++) {
+        let char = q.w[i];
+        
+        if(char === ' ') {
+            // 空格处理
+            let space = document.createElement('div');
+            space.className = 'char-space';
+            zone.appendChild(space);
+            continue;
+        }
+        
+        if(q.mask.includes(i)) {
+            // 这是被挖空的格子，做成输入框
+            let input = document.createElement('input');
+            input.type = 'text';
+            input.className = 'char-box input-box';
+            input.maxLength = 1;
+            input.id = `input-${inputCount}`;
+            input.dataset.answer = char;
+            
+            // 手机端自动跳格优化
+            let currentCount = inputCount;
+            input.oninput = function() {
+                if(this.value.length >= 1) {
+                    let next = document.getElementById(`input-${currentCount + 1}`);
+                    if(next) next.focus();
+                }
+            };
+            
+            zone.appendChild(input);
+            inputCount++;
+        } else {
+            // 这是原本就给出来的字母，转大写方便看清
+            let box = document.createElement('div');
+            box.className = 'char-box';
+            box.innerText = char.toUpperCase();
+            zone.appendChild(box);
+        }
+    }
+}
+
+function checkAnswer() {
+    const zone = document.getElementById('puzzle-zone');
+    const inputs = zone.getElementsByClassName('input-box');
+    const msg = document.getElementById('msg');
+    
+    let allCorrect = true;
+    for(let input of inputs) {
+        let userChar = input.value.trim().toLowerCase();
+        let correctChar = input.dataset.answer.toLowerCase();
+        if(userChar !== correctChar) {
+            allCorrect = false;
+            break;
+        }
+    }
+    
+    if(allCorrect) {
+        msg.className = "msg success";
+        msg.innerText = "🎉 答对了！太棒了！1.5秒后进入下一题...";
+        setTimeout(() => {
+            currentIndex++;
+            initQuestion();
+        }, 1500);
+    } else {
+        msg.className = "msg error";
+        msg.innerText = "❌ 字母好像填得不对哦，再仔细检查一下华文意思和拼写！";
+    }
+}
+
+window.onload = initQuestion;
+</script>
+</body>
+</html>
