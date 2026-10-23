@@ -8,19 +8,19 @@
         body { font-family: 'Helvetica Neue', Arial, sans-serif; background-color: #f0f2f5; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; -webkit-user-select: none; user-select: none; }
         .card { background: white; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 100%; max-width: 500px; padding: 20px; box-sizing: border-box; text-align: center; }
         h2 { color: #1a73e8; margin-top: 0; font-size: 20px; }
-        .progress { color: #666; font-size: 14px; margin-bottom: 15px; }
-        .prompt { font-size: 18px; font-weight: bold; color: #333; margin-bottom: 20px; padding: 10px; background: #e8f0fe; border-radius: 8px; }
-        .word-pool, .answer-zone { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; min-height: 50px; border: 2px dashed #ccc; border-radius: 8px; padding: 10px; margin-bottom: 20px; background: #fafafa; }
+        .progress { color: #666; font-size: 14px; margin-bottom: 15px; font-weight: bold; }
+        .prompt { font-size: 18px; font-weight: bold; color: #333; margin-bottom: 20px; padding: 12px; background: #e8f0fe; border-radius: 8px; border-left: 5px solid #1a73e8; text-align: left; }
+        .word-pool, .answer-zone { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; min-height: 60px; border: 2px dashed #ccc; border-radius: 8px; padding: 12px; margin-bottom: 20px; background: #fafafa; align-items: center; }
         .answer-zone { border-color: #1a73e8; background: #f4f8ff; }
-        .word-btn { background: white; border: 1px solid #dadce0; border-radius: 20px; padding: 8px 16px; font-size: 16px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.05); transition: all 0.2s; max-width: 100%; word-break: break-all; }
+        .word-btn { background: white; border: 1px solid #dadce0; border-radius: 20px; padding: 10px 18px; font-size: 16px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.05); transition: all 0.2s; max-width: 100%; word-break: break-all; font-weight: 500; }
         .word-btn:active { background: #e8f0fe; transform: scale(0.95); }
         .btn-group { display: flex; gap: 10px; justify-content: center; }
-        button.action-btn { background-color: #1a73e8; color: white; border: none; border-radius: 8px; padding: 12px 24px; font-size: 16px; font-weight: bold; cursor: pointer; flex: 1; }
+        button.action-btn { background-color: #1a73e8; color: white; border: none; border-radius: 8px; padding: 14px 24px; font-size: 16px; font-weight: bold; cursor: pointer; flex: 1; }
         button.action-btn:active { background-color: #1557b0; }
         button.reset-btn { background-color: #f1f3f4; color: #3c4043; }
-        .msg { font-weight: bold; margin-top: 15px; min-height: 24px; font-size: 16px; }
-        .success { color: #137333; }
-        .error { color: #c5221f; }
+        .msg { font-weight: bold; margin-top: 15px; min-height: 24px; font-size: 15px; line-height: 1.4; }
+        .success { color: #137333; background: #e6f4ea; padding: 8px; border-radius: 6px; }
+        .error { color: #c5221f; background: #fce8e6; padding: 8px; border-radius: 6px; }
         .final-screen { display: none; }
         .score-display { font-size: 48px; color: #1a73e8; font-weight: bold; margin: 20px 0; }
     </style>
@@ -28,14 +28,16 @@
 <body>
 
 <div class="card" id="game-card">
-    <h2>🎮 连词成句挑战赛 🎮</h2>
+    <h2>🎮 毕业旅行连词成句挑战 🎮</h2>
     <div class="progress" id="progress">第 1 / 10 关</div>
+    
+    <div style="text-align: left; font-size: 13px; color: #666; margin-bottom: 4px; font-weight: bold;">💡 华文意思（请根据这个排英文）：</div>
     <div class="prompt" id="prompt">正在加载提示...</div>
     
-    <div style="text-align: left; font-size: 12px; color: #666; margin-bottom: 4px;">你的答案区域 (点击单词可退回)：</div>
+    <div style="text-align: left; font-size: 13px; color: #666; margin-bottom: 4px; font-weight: bold;">你的答案区域 (点击单词可退回)：</div>
     <div class="answer-zone" id="answer-zone"></div>
     
-    <div style="text-align: left; font-size: 12px; color: #666; margin-bottom: 4px;">待选单词池 (点击进入答案区)：</div>
+    <div style="text-align: left; font-size: 13px; color: #666; margin-bottom: 4px; font-weight: bold;">待选单词池 (点击进入答案区)：</div>
     <div class="word-pool" id="word-pool"></div>
     
     <div class="btn-group">
@@ -47,16 +49,17 @@
 
 <div class="card final-screen" id="final-card">
     <h2>🏁 恭喜通关！ 🏁</h2>
-    <p>同学已经成功完成了所有连词成句的挑战！</p>
-    <div class="score-display">100 分</div>
-    <p style="color: #666; line-height: 1.6; text-align: left; background: #f8f9fa; padding: 15px; border-radius: 8px;">
-        <b>💪 你背下的完整作文：</b><br>
-        Do you remember your last trip? A year ago, I went on a graduation trip with my classmates. We traveled there by express bus. We stayed at a nice hotel. We visited many fun places in Kuala Lumpur. First, we went to the chocolate museum. Next, we visited the Faber-Castell factory to see how pencils are made. We also went to the Bank Negara Malaysia Museum to see old coins. In the evening, we saw the beautiful Petronas Twin Towers. It was a very wonderful and great trip!
+    <p>同学太棒了！你已经成功完成了所有连词成句的挑战！</p>
+    <div class="score-display">💯 100 分</div>
+    <p style="color: #333; line-height: 1.6; text-align: left; background: #f8f9fa; padding: 15px; border-radius: 8px; font-size: 15px;">
+        <b>💪 你背下的完整高分作文：</b><br><br>
+        Do you remember your last trip? A year ago, I went on a graduation trip with my classmates. We traveled there by express bus. We stayed at a nice hotel. <br><br>We visited many fun places in Kuala Lumpur. First, we went to the chocolate museum. Next, we visited the Faber-Castell factory to see how pencils are made. We also went to the Bank Negara Malaysia Museum to see old coins. In the evening, we saw the beautiful Petronas Twin Towers. It was a very wonderful and great trip!
     </p>
     <button class="action-btn" onclick="restartGame()">重新玩一次</button>
 </div>
 
 <script>
+// 带有华文解释的游戏核心数据
 const data = [
     { c: "你还记得你上一次旅行吗？", e: "Do you remember your last trip?" },
     { c: "一年前，我和班上的朋友去了一趟毕业旅行。", e: "A year ago, I went on a graduation trip with my classmates." },
@@ -64,7 +67,7 @@ const data = [
     { c: "我们住在一家很好的酒店。", e: "We stayed at a nice hotel." },
     { c: "我们在吉隆坡参观了许多好玩的地方。", e: "We visited many fun places in Kuala Lumpur." },
     { c: "第一站，我们去了巧克力博物馆。", e: "First, we went to the chocolate museum." },
-    { c: "接下来，我们参观了辉加工厂看铅笔是怎么做的。", e: "Next, we visited the Faber-Castell factory to see how pencils are made." },
+    { c: "接下来，我们参观了辉柏嘉工厂看铅笔是怎么做的。", e: "Next, we visited the Faber-Castell factory to see how pencils are made." },
     { c: "我们也去了马来西亚国家银行博物馆看旧硬币。", e: "We also went to the Bank Negara Malaysia Museum to see old coins." },
     { c: "傍晚，我们看到了美丽的双子塔。", e: "In the evening, we saw the beautiful Petronas Twin Towers." },
     { c: "那是一次非常精彩且棒的旅行！", e: "It was a very wonderful and great trip!" }
@@ -86,10 +89,11 @@ function initRound() {
     document.getElementById('msg').innerText = '';
     
     selectedWords = [];
+    // 移除标点符号进行拆分
     let clean = data[currentIndex].e.replace(/[?.!,]/g, '');
     poolWords = clean.split(' ');
     
-    // 随机打乱单词
+    // 随机打乱单词顺序
     poolWords.sort(() => Math.random() - 0.5);
     renderBlocks();
 }
@@ -144,14 +148,14 @@ function checkAnswer() {
     
     if(userAns === targetAns) {
         msg.className = "msg success";
-        msg.innerText = "🎉 答对了！太棒了！3秒后进入下一关...";
+        msg.innerText = "🎉 太棒了，完全正确！2秒后自动进入下一关...";
         setTimeout(() => {
             currentIndex++;
             initRound();
         }, 2000);
     } else {
         msg.className = "msg error";
-        msg.innerText = "❌ 顺序不太对哦，检查一下首字母大小写或语序，再试一次！";
+        msg.innerText = "❌ 顺序不太对哦！请检查首字母大写或单词的先后顺序，然后再试一次。";
     }
 }
 
